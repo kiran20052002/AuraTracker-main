@@ -54,7 +54,8 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, 'uploads'));
   },
   filename: function (req, file, cb) {
-  const originalName = file.originalname.replace(/\s+/g, '_'); // Replace spaces with underscore
+  const originalName = file.originalname.replace(/\s+/g, '_') // Replace spaces with underscore
+  .replace(/[?#%&]/g, "_");    // remove #, ?, %, & etc.
   cb(null, Date.now() + '-' + originalName);
 }
 
