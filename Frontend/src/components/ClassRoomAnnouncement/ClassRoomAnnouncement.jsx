@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Avatar, IconButton, Menu, MenuItem, Button } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DownloadIcon from "@mui/icons-material/Download";
 import "./style.css";
 import db from "../lib/Firebase";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
@@ -242,40 +241,6 @@ const ClassRoomAnnouncement = ({ classData, onEdit, onSubmissionChange }) => {
     }
   };
 
-  const handleDownload = async (fileUrl, filename) => {
-    try {
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename || 'download';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download failed:', error);
-      window.open(fileUrl, '_blank');
-    }
-  };
-
-  const getFileType = (fileUrl) => {
-    // Check if URL contains 'raw/upload' (PDFs and documents)
-    if (fileUrl.includes('/raw/upload/')) {
-      return 'pdf';
-    }
-    // Check file extension
-    const extension = fileUrl.split('.').pop().toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
-      return 'image';
-    }
-    if (['pdf'].includes(extension)) {
-      return 'pdf';
-    }
-    return 'unknown';
-  };
-
   useEffect(() => {
     if (classData) {
       const unsubscribe = db
@@ -323,16 +288,27 @@ const ClassRoomAnnouncement = ({ classData, onEdit, onSubmissionChange }) => {
                 >
                   <MoreVertIcon />
                 </IconButton>
+
+                {/* {item.sender === loggedInMail  && (
+                  <IconButton
+                    aria-controls="announcement-menu"
+                    aria-haspopup="true"
+                    onClick={(e) => handleMenuOpen(e, item)}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                )} */}
               </div>
               <p className="amt__txt">{item.text}</p>
               {item.fileUrls && item.fileUrls.length > 0 && (
                 <div className="amt__files">
                   {item.fileUrls.map((fileUrl, index) => {
-                    const fileType = getFileType(fileUrl);
-                    const filePath = fileUrl;
-                    const filename = fileUrl.split('/').pop() || `file-${index}`;
-                    
-                    if (fileType === 'image') {
+                    const fileExtension = fileUrl
+                      .split(".")
+                      .pop()
+                      .toLowerCase();
+                    const filePath = `${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`;
+                    if (["jpg", "jpeg", "png"].includes(fileExtension)) {
                       return (
                         <img
                           key={index}
@@ -341,39 +317,18 @@ const ClassRoomAnnouncement = ({ classData, onEdit, onSubmissionChange }) => {
                           alt={`Announcement file ${index}`}
                         />
                       );
-                    } else if (fileType === 'pdf') {
+                    } else if (fileExtension === "pdf") {
                       return (
-                        <div key={index} className="amt__pdf" style={{ 
-                          display: 'flex', 
-                          flexDirection: 'column', 
-                          alignItems: 'center',
-                          gap: '10px',
-                          padding: '15px',
-                          border: '1px solid #ddd',
-                          borderRadius: '8px',
-                          margin: '10px 0'
-                        }}>
-                          <PictureAsPdfIcon
-                            style={{ color: "red", fontSize: "5rem" }}
-                          />
-                          <p style={{ margin: '5px 0', fontSize: '14px', color: '#666', textAlign: 'center' }}>
-                            {filename}
-                          </p>
-                          <div style={{ display: 'flex', gap: '10px' }}>
-                            <Button
-                              variant="outlined"
-                              startIcon={<DownloadIcon />}
-                              onClick={() => handleDownload(filePath, filename)}
-                            >
-                              Download
-                            </Button>
-                            <Button
-                              variant="contained"
-                              onClick={() => window.open(filePath, '_blank')}
-                            >
-                              View
-                            </Button>
-                          </div>
+                        <div key={index} className="amt__pdf">
+                          <a
+                            href={filePath}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <PictureAsPdfIcon
+                              style={{ color: "red", fontSize: "5rem" }}
+                            />
+                          </a>
                         </div>
                       );
                     } else {
