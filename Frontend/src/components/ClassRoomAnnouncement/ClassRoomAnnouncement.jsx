@@ -363,13 +363,13 @@ const ClassRoomAnnouncement = ({ classData, onEdit, onSubmissionChange }) => {
                             <Button
                               variant="outlined"
                               startIcon={<DownloadIcon />}
-                              onClick={() => handleDownload(filePath + '.pdf', filename + '.pdf')}
+                              onClick={() => handleDownload(filePath, filename)}
                             >
                               Download
                             </Button>
                             <Button
                               variant="contained"
-                              onClick={() => window.open(filePath + '.pdf', '_blank')}
+                              onClick={() => window.open(filePath, '_blank')}
                             >
                               View
                             </Button>

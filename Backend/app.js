@@ -48,23 +48,20 @@ app.use(cors(corsOptions));
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    const originalName = file.originalname
-      .replace(/\s+/g, "_")
-      .replace(/\.[^/.]+$/, "");
-    const fileExtension = file.originalname.split(".").pop().toLowerCase();
-
+    const originalName = file.originalname.replace(/\s+/g, '_');
+    const fileExtension = file.originalname.split('.').pop().toLowerCase();
+    
     // Use 'raw' resource type for PDFs and documents, 'auto' for images
-    const resourceType = ["pdf", "doc", "docx"].includes(fileExtension)
-      ? "raw"
-      : "auto";
-
+    const resourceType = ['pdf', 'doc', 'docx'].includes(fileExtension) ? 'raw' : 'auto';
+    
     return {
-      folder: "aura-tracker-uploads",
+      folder: 'aura-tracker-uploads',
       resource_type: resourceType,
-      public_id: Date.now() + "-" + originalName,
-      access_mode: "public",
+      public_id: Date.now() + '-' + originalName, // Keep the full filename with extension
+      access_mode: 'public',
+      format: fileExtension, // Explicitly set format
     };
-  },
+  }
 });
 const upload = multer({ storage });
 
@@ -82,34 +79,31 @@ app.get("/api/v1/files", async (req, res) => {
 // Upload a file
 app.post("/api/v1/upload", upload.array("files", 10), async (req, res) => {
   try {
-    console.log("Uploaded files:", req.files);
+    console.log("Uploaded files:", req.files); 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "No files uploaded." });
     }
-
-    // Debug: Log all file properties
-    req.files.forEach((file, index) => {
-      console.log(`File ${index}:`, {
-        path: file.path,
-        url: file.url,
-        secure_url: file.secure_url,
-        resource_type: file.resource_type,
-        filename: file.filename,
-      });
-    });
-
-    // Use secure_url or path
+    
+    // Process file URLs to ensure proper format
     const fileUrls = req.files.map((file) => {
-      return file.secure_url || file.url || file.path;
+      let fileUrl = file.secure_url || file.url || file.path;
+      
+      // For raw uploads (PDFs, docs), ensure the URL includes the file extension
+      if (fileUrl.includes('/raw/upload/') && !fileUrl.match(/\.(pdf|doc|docx)$/i)) {
+        // Extract the original extension from the original filename
+        const originalExt = file.originalname.split('.').pop().toLowerCase();
+        fileUrl = `${fileUrl}.${originalExt}`;
+      }
+      
+      console.log(`Processed URL for ${file.originalname}:`, fileUrl);
+      return fileUrl;
     });
-
+    
     console.log("Final File URLs:", fileUrls);
     return res.json({ message: "Upload successful!", fileUrls });
   } catch (error) {
     console.error("Error uploading files:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while uploading files" });
+    res.status(500).json({ message: "An error occurred while uploading files" });
   }
 });
 
