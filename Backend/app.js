@@ -12,6 +12,8 @@ import timetableRouter from './routes/timetableRoutes.js';
 import notificationRouter from './routes/notificationRoutes.js';
 import missionRouter from './routes/missionRoutes.js';
 import multer from "multer";
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sendEmail from './utils/sendEmail.js';
@@ -20,23 +22,20 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 dotenv.config();
 
-// ES module workaround for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+
 const app = express();
 const PORT = process.env.PORT;
 
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Connect to MongoDB
-// mongoose.connect("mongodb://localhost:27017/aura-tracker")
-//   .then(() => console.log("Connected to MongoDB"))
-//   .catch((e) => console.log(e));
 await connectDB();
 
 // CORS config
@@ -45,21 +44,23 @@ const corsOptions = {
     credentials:true,
 }
 app.use(cors(corsOptions));
-// app.use(cors());
 
 
-// Multer config
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'uploads'));
-  },
-  filename: function (req, file, cb) {
-  const originalName = file.originalname.replace(/\s+/g, '_'); // Replace spaces with underscore
-  cb(null, Date.now() + '-' + originalName);
-}
 
+// Cloudinary Storage Configuration
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'aura-tracker-uploads',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
+    resource_type: 'auto',
+    public_id: (req, file) => {
+      const originalName = file.originalname.replace(/\s+/g, '_').replace(/\.[^/.]+$/, '');
+      return Date.now() + '-' + originalName;
+    }
+  }
 });
- const upload = multer({storage});
+const upload = multer({storage});
 
 // Fetch all files
  app.get("/api/v1/files", async(req,res) =>{
@@ -80,7 +81,8 @@ const storage = multer.diskStorage({
       return res.status(400).json({ message: "No files uploaded." });
     }
     
-    const fileUrls = req.files.map((file) => `uploads/${file.filename}`);
+    // Cloudinary returns complete URLs in file.path
+    const fileUrls = req.files.map((file) => file.path);
     return res.json({ message: "Upload successful!", fileUrls });
   } catch (error) {
     console.error("Error uploading files:", error);
@@ -110,9 +112,7 @@ app.post("/send-badge-email", async (req, res) => {
 });
 
 
-// app.post('/api/v1/upload', (req, res) => {
-//   res.send({ message: 'Upload successful!' });
-// });
+
 
 app.use("/",userRouter);
 app.use("/",adminRouter);

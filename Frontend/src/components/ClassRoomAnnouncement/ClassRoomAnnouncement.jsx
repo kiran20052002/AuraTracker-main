@@ -288,16 +288,6 @@ const ClassRoomAnnouncement = ({ classData, onEdit, onSubmissionChange }) => {
                 >
                   <MoreVertIcon />
                 </IconButton>
-
-                {/* {item.sender === loggedInMail  && (
-                  <IconButton
-                    aria-controls="announcement-menu"
-                    aria-haspopup="true"
-                    onClick={(e) => handleMenuOpen(e, item)}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                )} */}
               </div>
               <p className="amt__txt">{item.text}</p>
               {item.fileUrls && item.fileUrls.length > 0 && (
@@ -307,7 +297,9 @@ const ClassRoomAnnouncement = ({ classData, onEdit, onSubmissionChange }) => {
                       .split(".")
                       .pop()
                       .toLowerCase();
-                    const filePath = `${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`;
+                    // Cloudinary URLs are already complete - no need to prepend BASE_URL
+                    const filePath = fileUrl;
+                    
                     if (["jpg", "jpeg", "png"].includes(fileExtension)) {
                       return (
                         <img
