@@ -54,6 +54,8 @@ const storage = new CloudinaryStorage({
     folder: 'aura-tracker-uploads',
     allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
     resource_type: 'auto',
+    type: 'upload', 
+    access_mode: 'public',
     public_id: (req, file) => {
       const originalName = file.originalname.replace(/\s+/g, '_').replace(/\.[^/.]+$/, '');
       return Date.now() + '-' + originalName;
@@ -82,7 +84,11 @@ const upload = multer({storage});
     }
     
     // Cloudinary returns complete URLs in file.path
-    const fileUrls = req.files.map((file) => file.path);
+    const fileUrls = req.files.map((file) => {
+      // Ensure we're returning the secure_url which is always public
+      return file.secure_url || file.url || file.path;
+    });
+    console.log("File URLs:", fileUrls); // Debug log
     return res.json({ message: "Upload successful!", fileUrls });
   } catch (error) {
     console.error("Error uploading files:", error);
