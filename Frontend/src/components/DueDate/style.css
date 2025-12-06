@@ -1,0 +1,46 @@
+.assignments-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tabs {
+  background: #1976d2;
+  color: white;
+  border-radius: 10px 10px 0 0;
+}
+
+.assignments-section {
+  text-align: center;
+  padding: 20px;
+}
+
+.toggle-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.assignment-card {
+  margin: 10px auto;
+  padding: 15px;
+  max-width: 600px;
+  background: #ffffff;
+  border-left: 5px solid #1976d2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease-in-out;
+}
+
+.assignment-card:hover {
+  transform: scale(1.02);
+}
+
+.no-assignments {
+  font-size: 16px;
+  color: #555;
+  margin-top: 20px;
+}
