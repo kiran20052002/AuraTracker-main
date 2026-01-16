@@ -5,7 +5,7 @@ import db from "../lib/Firebase";
 import "./style.css";
 
 function SubmittedAssignments() {
-  const { classId, postId } = useParams(); // Fix destructuring
+  const { classId, postId } = useParams(); 
   const navigate = useNavigate();
   const [submittedAssignments, setSubmittedAssignments] = useState([]);
 
@@ -51,7 +51,8 @@ function SubmittedAssignments() {
                 <div key={index} className="file-preview">
                   {fileUrl.endsWith(".pdf") ? (
                     <a
-                      href={`${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`}
+                      //href={`${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`}
+                      href={fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="pdf-link"
@@ -60,7 +61,8 @@ function SubmittedAssignments() {
                     </a>
                   ) : (
                     <a
-                      href={`${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`}
+                      //href={`${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`}
+                      href={fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="submission-image"

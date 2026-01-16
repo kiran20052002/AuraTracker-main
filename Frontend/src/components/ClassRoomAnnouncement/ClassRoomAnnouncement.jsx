@@ -307,7 +307,8 @@ const ClassRoomAnnouncement = ({ classData, onEdit, onSubmissionChange }) => {
                       .split(".")
                       .pop()
                       .toLowerCase();
-                    const filePath = `${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`;
+                    //const filePath = `${import.meta.env.VITE_BACKEND_URL}/${fileUrl}`;
+                    const filePath = fileUrl;
                     if (["jpg", "jpeg", "png"].includes(fileExtension)) {
                       return (
                         <img
